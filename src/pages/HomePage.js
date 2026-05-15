@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import "./HomePage.css";
 
 const API_BASE_URL = (
@@ -26,7 +26,7 @@ function HomePage() {
   const [saving, setSaving] = useState(false);
   const [alert, setAlert] = useState({ type: "", text: "" });
 
-  const request = async (path, options = {}) => {
+  const request = useCallback(async (path, options = {}) => {
     const response = await fetch(`${API_BASE_URL}${path}`, {
       headers: {
         "Content-Type": "application/json",
@@ -46,11 +46,12 @@ function HomePage() {
     }
 
     return data;
-  };
+  }, []);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
+
       const [typesResult, itemsResult] = await Promise.all([
         request("/api/item-types"),
         request("/api/items")
@@ -66,11 +67,11 @@ function HomePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [request]);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   const totalItems = items.length;
 
@@ -282,7 +283,9 @@ function HomePage() {
       <section className="form-section">
         <div className="section-title">
           <div>
-            <span className="badge light">{editingItemId ? "Edit Item" : "New Entry"}</span>
+            <span className="badge light">
+              {editingItemId ? "Edit Item" : "New Entry"}
+            </span>
             <h2>{editingItemId ? "Update Item" : "Add Purchase Items"}</h2>
           </div>
 
